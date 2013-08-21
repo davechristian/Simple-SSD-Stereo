@@ -13,7 +13,7 @@ Sample right:
 
 ![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/bowling_small_r.png)
 
-Resulting depth map:
+Resulting depth map (with 8x8 pixel support window):
 
 ![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/depth.png)
 

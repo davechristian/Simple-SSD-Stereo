@@ -37,12 +37,12 @@ def stereo_match(left_img, right_img):
     right_img = PIL.Image.open(right_img)
     right = np.asarray(right_img)  
 
-	# Initial SSD
+    # Initial SSD
     w,h = left_img.size # Assumes that both images are same size
     ssd = np.empty((w,h), np.uint8)
     ssd.shape = h,w
 
-	# SSD support window (kernel)
+    # SSD support window (kernel)
     win_ssd = np.empty((w,h), np.uint16)
     win_ssd.shape = h,w
         
@@ -50,7 +50,7 @@ def stereo_match(left_img, right_img):
     depth = np.empty((w,h), np.uint8)
     depth.shape = h,w
 
-	# Minimum ssd difference between both images
+    # Minimum ssd difference between both images
     min_ssd = np.empty((w,h), np.uint16)
     min_ssd.shape = h,w
     for y in xrange(h):
@@ -60,13 +60,13 @@ def stereo_match(left_img, right_img):
     max_offset = 30
     offset_adjust = 255 / max_offset # used to brighten depth map
 
-	# Create ranges now instead of per loop
+    # Create ranges now instead of per loop
     y_range = xrange(h)
     x_range = xrange(w)
     x_range_ssd = xrange(w) 
     
-    # u and v support window (currently -2 to 2, so 8x8)
-    window_range = xrange(-1, 2) 
+    # u and v support window (currently -4 to 4, so 8x8)
+    window_range = xrange(-4, 5) 
 
     # Main loop....
     for offset in xrange(max_offset):               
@@ -87,15 +87,15 @@ def stereo_match(left_img, right_img):
                         if (y + i > -1 and y + i < h and x + j > -1 and x + j < w):
                             sum_sad += ssd[y + i, x + j]                   
 				
-				# Store the sum in the windows SSD image
+                # Store the sum in the windows SSD image
                 win_ssd[y, x] = sum_sad 
 
         # Update the min abs diff image with this new data
         for y in y_range:
             for x in x_range:
-				# Is this new windowed SSD pixel a better match?
+                # Is this new windowed SSD pixel a better match?
                 if win_ssd[y, x] < min_ssd[y, x]:
-					# If so, store it and add to the depth map      
+                    # If so, store it and add to the depth map      
                     min_ssd[y, x] = win_ssd[y, x]                
                     depth[y, x] = offset * offset_adjust
 
@@ -106,5 +106,5 @@ def stereo_match(left_img, right_img):
 
 
 if __name__ == '__main__':    
-    stereo_match("bowling_l.png", "bowling_r.png")
+    stereo_match("bowling_small_l.png", "bowling_small_r.png")
 
