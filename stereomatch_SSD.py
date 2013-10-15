@@ -71,28 +71,27 @@ def stereo_match(left_img, right_img):
 
     # Main loop....
     for offset in xrange(max_offset):
-    # Create initial ssd image
+    # Create initial image of squared differences between left and right image at the current offset
         for y in y_range:
             for x in x_range_ssd:
                 if x - offset > 0:
                     diff = left[y, x, 0] - right[y, x - offset, 0]
-                    ssd[y, x] = diff * diff  # Sum squared diffs
+                    ssd[y, x] = diff * diff
 
-        # Create a sum of abs differences at this offset    
+        # Create a sum of squared differences over a support window at this offset
         for y in y_range:
             for x in x_range:
                 sum_sad = 0
-                # Calculate the sum of squared differences window
                 for i in window_range:
                     for j in window_range:
-                        # TODO: I need to replace this by surrounding image with buffer
+                        # TODO: I need to replace this expensive check by surrounding image with buffer
                         if (-1 < y + i < h) and (-1 < x + j < w):
                             sum_sad += ssd[y + i, x + j]
 
-                            # Store the sum in the windows SSD image
+                # Store the sum in the window SSD image
                 win_ssd[y, x] = sum_sad
 
-                # Update the min abs diff image with this new data
+        # Update the min ssd diff image with this new data
         for y in y_range:
             for x in x_range:
                 # Is this new windowed SSD pixel a better match?
