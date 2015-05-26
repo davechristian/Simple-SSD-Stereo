@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-# -------------------------------------------------------
+# -------------------------------------------------------------------
 # Simple sum of squared differences (SSD) stereo-matching 
-# -------------------------------------------------------
+# -------------------------------------------------------------------
 
 # The MIT License
 
-# Copyright (c) 2013 David Christian
+# Copyright (c) 2015 David Christian
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,14 @@
 # THE SOFTWARE.
 
 import numpy as np
-import matplotlib.pyplot as plt
-import PIL
+from PIL import Image
 
 
 def stereo_match(left_img, right_img):
-    # Load in both images. These are assumed to be RGBA format images
-    left_img = PIL.Image.open(left_img)
+    # Load in both images. These are assumed to be RGBA 8bit per channel images
+    left_img = Image.open(left_img)
     left = np.asarray(left_img)
-    right_img = PIL.Image.open(right_img)
+    right_img = Image.open(right_img)
     right = np.asarray(right_img)
 
     # Initial SSD
@@ -81,15 +80,15 @@ def stereo_match(left_img, right_img):
         # Create a sum of squared differences over a support window at this offset
         for y in y_range:
             for x in x_range:
-                sum_sad = 0
+                sum_ssd = 0
                 for i in window_range:
                     for j in window_range:
-                        # TODO: I need to replace this expensive check by surrounding image with buffer
+                        # TODO: I need to replace this expensive check by surrounding image with buffer / padding
                         if (-1 < y + i < h) and (-1 < x + j < w):
-                            sum_sad += ssd[y + i, x + j]
+                            sum_ssd += ssd[y + i, x + j]
 
                 # Store the sum in the window SSD image
-                win_ssd[y, x] = sum_sad
+                win_ssd[y, x] = sum_ssd
 
         # Update the min ssd diff image with this new data
         for y in y_range:
@@ -103,7 +102,7 @@ def stereo_match(left_img, right_img):
         print "Calculated offset ", offset
 
     # Convert to PIL and save it
-    PIL.Image.fromarray(depth).save('depth.png')
+    Image.fromarray(depth).save('depth.png')
 
 
 if __name__ == '__main__':
