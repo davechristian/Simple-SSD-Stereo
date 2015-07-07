@@ -7,13 +7,13 @@ It takes a left and right image (that have to be the same size) and outputs a de
 
 Sample left:
 
-![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/bowling_small_l.png)
+![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/view0.png)
 
 Sample right:
 
-![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/bowling_small_r.png)
+![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/view1.png)
 
-Resulting depth map (with 8x8 pixel support window):
+Resulting depth map (with 6x6 pixel support window):
 
 ![ScreenShot](https://raw.github.com/davechristian/Simple-SSD-Stereo/master/depth.png)
 
