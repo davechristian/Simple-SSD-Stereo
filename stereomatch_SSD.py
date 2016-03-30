@@ -29,7 +29,6 @@
 import numpy as np
 from PIL import Image
 
-
 def stereo_match(left_img, right_img):
     # Load in both images. These are assumed to be RGBA 8bit per channel images
     left_img = Image.open(left_img)
@@ -58,7 +57,7 @@ def stereo_match(left_img, right_img):
             min_ssd[y, x] = 65535  # Init to high value
 
     max_offset = 30
-    offset_adjust = 255 / max_offset  # used to brighten depth map
+    offset_adjust = 255 / max_offset 
 
     # Create ranges now instead of per loop
     y_range = range(h)
@@ -66,7 +65,7 @@ def stereo_match(left_img, right_img):
     x_range_ssd = range(w)
 
     # u and v support window
-    window_range = range(-3, 3)
+    window_range = range(-3, 3) # 6x6
 
     # Main loop....
     for offset in range(max_offset):
@@ -77,7 +76,7 @@ def stereo_match(left_img, right_img):
                     diff = left[y, x, 0] - right[y, x - offset, 0]
                     sd[y, x] = diff * diff
 
-		# Create a sum of squared differences over a support window at this offset
+	# Sum the squared differences over a support window at this offset
         for y in y_range:
             for x in x_range:
                 sum_sd = 0
@@ -99,11 +98,8 @@ def stereo_match(left_img, right_img):
                     min_ssd[y, x] = win_ssd[y, x]
                     depth[y, x] = offset * offset_adjust
 
-        print("Calculated offset ", offset)
-
     # Convert to PIL and save it
     Image.fromarray(depth).save('depth.png')
-
 
 if __name__ == '__main__':
     #stereo_match("bowling_small_l.png", "bowling_small_r.png")
