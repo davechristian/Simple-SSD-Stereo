@@ -6,7 +6,7 @@
 
 # The MIT License
 
-# Copyright (c) 2015 David Christian
+# Copyright (c) 2016 David Christian
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,15 @@
 import numpy as np
 from PIL import Image
 
-
 def stereo_match(left_img, right_img):
-    # Load in both images. These are assumed to be RGBA 8bit per channel images
+    # Load in both images, assumed to be RGBA 8bit per channel images
     left_img = Image.open(left_img)
     left = np.asarray(left_img)
     right_img = Image.open(right_img)
     right = np.asarray(right_img)
 
     # Initial squared differences
-    w, h = left_img.size  # Assumes that both images are same size
+    w, h = left_img.size  # assume that both images are same size
     sd = np.empty((w, h), np.uint8)
     sd.shape = h, w
 
@@ -53,10 +52,8 @@ def stereo_match(left_img, right_img):
     # Minimum ssd difference between both images
     min_ssd = np.empty((w, h), np.uint16)
     min_ssd.shape = h, w
-    for y in range(h):
-        for x in range(w):
-            min_ssd[y, x] = 65535  # Init to high value
-
+	min_ssd.fill(65535)
+    
     max_offset = 30
     offset_adjust = 255 / max_offset  # used to brighten depth map
 
@@ -103,9 +100,7 @@ def stereo_match(left_img, right_img):
 
     # Convert to PIL and save it
     Image.fromarray(depth).save('depth.png')
-
-
+	
 if __name__ == '__main__':
-    #stereo_match("bowling_small_l.png", "bowling_small_r.png")
     stereo_match("view0.png", "view1.png")
 
