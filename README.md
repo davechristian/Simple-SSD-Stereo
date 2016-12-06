@@ -1,7 +1,7 @@
 Simple-SSD-Stereo
 =================
 
-This little script is for anyone interested in the basics of writing stereo-matching code. It's a (very) simple implementation of a sum of squared differences (SSD), support-window based stereo-matching algorithm.
+This little script is for anyone interested in the basics of writing stereo-matching code. It's a simple implementation of a sum of squared differences (SSD), support-window based stereo-matching algorithm.
 
 It takes a two photos, a left and right image of a subject taken from slightly different angles, and outputs a depth (disparity) map. Each pixel in the depth map indicates how far away it is from the camera - the darker it is, the further away it has been calculated to be, and vice versa.
 
