@@ -5,8 +5,6 @@
 
 # Copyright (c) 2016 David Christian
 # Licensed under the MIT License
-
-import sys
 import numpy as np
 from PIL import Image
 
@@ -26,9 +24,8 @@ def stereo_match(left_img, right_img, kernel, max_offset):
     offset_adjust = 255 / max_offset  # this is used to map depth map output to 0-255 range
       
     for y in range(kernel_half, h - kernel_half):      
-        sys.stdout.write("\r" + "Processing Y " + str(y) + " of " + str(h))
-        sys.stdout.flush()
-                
+        print(".", end="", flush=True)  # let the user know that something is happening (slowly!)
+        
         for x in range(kernel_half, w - kernel_half):
             best_offset = 0
             prev_ssd = 65534
@@ -42,9 +39,9 @@ def stereo_match(left_img, right_img, kernel, max_offset):
                 # we want to go by the squared differences of the neighbouring pixels too
                 for v in range(-kernel_half, kernel_half):
                     for u in range(-kernel_half, kernel_half):
-					    # iteratively sum the sum of squared differences value for this block
-						# left[] and right[] are arrays of uint8, so converting them to int saves
-						# potential overflow 
+                        # iteratively sum the sum of squared differences value for this block
+                        # left[] and right[] are arrays of uint8, so converting them to int saves
+                        # potential overflow, and executes a lot faster 
                         ssd_temp = int(left[y+v, x+u]) - int(right[y+v, (x+u) - offset])  
                         ssd += ssd_temp * ssd_temp              
                 
