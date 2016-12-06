@@ -1,108 +1,66 @@
 #!/usr/bin/env python
-
-# -------------------------------------------------------------------
-# Simple sum of squared differences (SSD) stereo-matching 
-# -------------------------------------------------------------------
-
-# The MIT License
+# --------------------------------------------------------------------
+# Simple sum of squared differences (SSD) stereo-matching using Numpy
+# --------------------------------------------------------------------
 
 # Copyright (c) 2016 David Christian
+# Licensed under the MIT License
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
+import sys
 import numpy as np
 from PIL import Image
 
-def stereo_match(left_img, right_img):
+def stereo_match(left_img, right_img, kernel, max_offset):
     # Load in both images, assumed to be RGBA 8bit per channel images
-    left_img = Image.open(left_img)
+    left_img = Image.open(left_img).convert('L')
     left = np.asarray(left_img)
-    right_img = Image.open(right_img)
-    right = np.asarray(right_img)
-
-    # Initial squared differences
-    w, h = left_img.size  # assume that both images are same size
-    sd = np.empty((w, h), np.uint8)
-    sd.shape = h, w
-
-    # SSD support window (kernel)
-    win_ssd = np.empty((w, h), np.uint16)
-    win_ssd.shape = h, w
-	
-    # Depth (or disparity) map
-    depth = np.empty((w, h), np.uint8)
-    depth.shape = h, w
-
-    # Minimum ssd difference between both images
-    min_ssd = np.empty((w, h), np.uint16)
-    min_ssd.shape = h, w
-	min_ssd.fill(65535)
+    right_img = Image.open(right_img).convert('L')
+    right = np.asarray(right_img)    
+    w, h = left_img.size  # assume that both images are same size   
     
-    max_offset = 30
-    offset_adjust = 255 / max_offset 
-
-    # Create ranges now instead of per loop
-    y_range = range(h)
-    x_range = range(w)
-    x_range_ssd = range(w)
-
-    # u and v support window
-    window_range = range(-3, 3) # 6x6
-
-    # Main loop....
-    for offset in range(max_offset):
-        # Create initial image of squared differences between left and right image at the current offset
-        for y in y_range:
-            for x in x_range_ssd:
-                if x - offset > 0:
-                    diff = left[y, x, 0] - right[y, x - offset, 0]
-                    sd[y, x] = diff * diff
-
-	# Sum the squared differences over a support window at this offset
-        for y in y_range:
-            for x in x_range:
-                sum_sd = 0
-                for i in window_range:
-                    for j in window_range:
-                        # TODO: replace this expensive check by surrounding image with buffer / padding
-                        if (-1 < y + i < h) and (-1 < x + j < w):
-                            sum_sd += sd[y + i, x + j]
-
-                # Store the sum in the window SSD image
-                win_ssd[y, x] = sum_sd
-
-        # Update the min ssd diff image with this new data
-        for y in y_range:
-            for x in x_range:
-                # Is this new windowed SSD pixel a better match?
-                if win_ssd[y, x] < min_ssd[y, x]:
-                    # If so, store it and add to the depth map      
-                    min_ssd[y, x] = win_ssd[y, x]
-                    depth[y, x] = offset * offset_adjust
-
+    # Depth (or disparity) map
+    depth = np.zeros((w, h), np.uint8)
+    depth.shape = h, w
+       
+    kernel_half = int(kernel / 2)    
+    offset_adjust = 255 / max_offset  # this is used to map depth map output to 0-255 range
+      
+    for y in range(kernel_half, h - kernel_half):      
+        sys.stdout.write("\r" + "Processing Y " + str(y) + " of " + str(h))
+        sys.stdout.flush()
+                
+        for x in range(kernel_half, w - kernel_half):
+            best_offset = 0
+            prev_ssd = 65534
+            
+            for offset in range(max_offset):               
+                ssd = 0
+                ssd_temp = 0                            
+                
+                # v and u are the x,y of our local window search, used to ensure a good 
+                # match- going by the squared differences of two pixels alone is insufficient, 
+                # we want to go by the squared differences of the neighbouring pixels too
+                for v in range(-kernel_half, kernel_half):
+                    for u in range(-kernel_half, kernel_half):
+					    # iteratively sum the sum of squared differences value for this block
+						# left[] and right[] are arrays of uint8, so converting them to int saves
+						# potential overflow 
+                        ssd_temp = int(left[y+v, x+u]) - int(right[y+v, (x+u) - offset])  
+                        ssd += ssd_temp * ssd_temp              
+                
+                # if this value is smaller than the previous ssd at this block
+                # then it's theoretically a closer match. Store this value against
+                # this block..
+                if ssd < prev_ssd:
+                    prev_ssd = ssd
+                    best_offset = offset
+                            
+            # set depth output for this x,y location to the best match
+            depth[y, x] = best_offset * offset_adjust
+                                
     # Convert to PIL and save it
     Image.fromarray(depth).save('depth.png')
-<<<<<<< HEAD
-	
-=======
 
->>>>>>> origin/master
 if __name__ == '__main__':
-    stereo_match("view0.png", "view1.png")
+    stereo_match("view0.png", "view1.png", 6, 30)  # 6x6 local search kernel, 30 pixel search range
 
