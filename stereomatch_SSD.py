@@ -20,11 +20,11 @@ def stereo_match(left_img, right_img, kernel, max_offset):
     depth = np.zeros((w, h), np.uint8)
     depth.shape = h, w
        
-    kernel_half = int(kernel / 2)    
+    kernel_half = int(kernel / 2)
     offset_adjust = 255 / max_offset  # this is used to map depth map output to 0-255 range
       
-    for y in range(kernel_half, h - kernel_half):      
-        print(".", end="", flush=True)  # let the user know that something is happening (slowly!)
+    for y in range(kernel_half, h - kernel_half):              
+        print("\rProcessing.. %d%% complete"%(y / (h - kernel_half) * 100), end="", flush=True)        
         
         for x in range(kernel_half, w - kernel_half):
             best_offset = 0
@@ -34,14 +34,13 @@ def stereo_match(left_img, right_img, kernel, max_offset):
                 ssd = 0
                 ssd_temp = 0                            
                 
-                # v and u are the x,y of our local window search, used to ensure a good 
-                # match- going by the squared differences of two pixels alone is insufficient, 
-                # we want to go by the squared differences of the neighbouring pixels too
+                # v and u are the x,y of our local window search, used to ensure a good match
+                # because the squared differences of two pixels alone is not enough ot go on
                 for v in range(-kernel_half, kernel_half):
                     for u in range(-kernel_half, kernel_half):
                         # iteratively sum the sum of squared differences value for this block
                         # left[] and right[] are arrays of uint8, so converting them to int saves
-                        # potential overflow, and executes a lot faster 
+                        # potential overflow
                         ssd_temp = int(left[y+v, x+u]) - int(right[y+v, (x+u) - offset])  
                         ssd += ssd_temp * ssd_temp              
                 
@@ -60,4 +59,3 @@ def stereo_match(left_img, right_img, kernel, max_offset):
 
 if __name__ == '__main__':
     stereo_match("view0.png", "view1.png", 6, 30)  # 6x6 local search kernel, 30 pixel search range
-
